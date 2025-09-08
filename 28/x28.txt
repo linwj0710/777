@@ -1,3 +1,26 @@
+ZLT-X28 OpenWrt LuCI 修复
+项目概述
+该项目在 ZLT-X28 路由器上启用 OpenWrt 的完整功能，同时保留原厂固件。与标准 OpenWrt 安装不同，您的设备将继续运行原厂固件和 Web UI（可通过 80/443 端口访问），同时可通过 4153 端口访问 OpenWrt 的 LuCI 接口。这种方法在保留原厂固件的同时，解锁了 OpenWrt 的高级功能。
+通过集成 OpenWrt 的 LuCI 接口增强了 ZLT-X28 &PRO 5G 路由器的功能，无需替换原厂固件。用户可以通过 80/443 端口访问原厂 Web UI，并通过 4153 端口访问 OpenWrt LuCI 接口，从而在保持系统稳定性的同时启用高级功能。
+
+技术背景
+默认状态：ZLT-X28 路由器附带供应商固件，其中包含有限的 Web UI（端口 80/443）
+非官方 OpenWrt：这些设备可以与供应商固件一起运行 OpenWrt ，但现有版本中的 LuCI 接口已损坏
+修复：此解决方案无需修改供应商组件即可修复 LuCI，从而实现双重访问：
+供应商 UI：端口 80/443（原始功能）
+OpenWrt LuCI：端口 4153（高级功能）
+
+已启用的关键功能
+OpenVPN 服务器/客户端配置
+高级防火墙和网络控制
+QoS 和带宽监控
+ETC
+
+要求
+Telnet 访问路由器（通常通过命令注入漏洞启用）
+Root shell 访问权限（通过初始漏洞实现）
+路由器上的互联网连接
+
 步骤 1：将文件直接下载到路由器
 在路由器 shell 中运行以下命令：
 wget https://github.com/linwj0710/777/raw/refs/heads/main/28/uhttpd -O /usr/sbin/uhttpd
