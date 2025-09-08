@@ -1,0 +1,103 @@
+步骤 1：将文件直接下载到路由器
+在路由器 shell 中运行以下命令：
+wget https://github.com/linwj0710/777/raw/refs/heads/main/28/uhttpd -O /usr/sbin/uhttpd
+wget https://github.com/linwj0710/777/raw/refs/heads/main/28/luci_fixed.tgz -O /tmp/luci_fixed.tgz
+chmod +x /usr/sbin/uhttpd
+
+步骤2：安装修复的LuCI组件
+tar xzf /tmp/luci_fixed.tgz -C /tmp
+cp -r /tmp/www/luci-static /www/
+cp -r /tmp/usr/lib/lua/luci /usr/lib/lua/
+cp -r /tmp/usr/share/luci /usr/share/
+rm /tmp/luci_fixed.tgz
+
+步骤3：启动LuCI界面
+uhttpd -p 0.0.0.0:4153 -h /www &
+访问 OpenWrt：http://[ROUTER_IP]:4153
+
+步骤 4：设置 root 密码
+您需要此信息才能登录 LuCl
+passwd root
+
+步骤5：修复OpenWrt UI语言和样式错误
+打开配置文件： 
+vi /etc/config/luci
+
+config core 'main'
+        option lang 'auto'
+        option mediaurlbase '/luci-static/bootstrap'
+        option resourcebase '/luci-static/resources'
+        option ubuspath '/ubus/'
+
+config extern 'flash_keep'
+        option uci '/etc/config/'
+        option dropbear '/etc/dropbear/'
+        option openvpn '/etc/openvpn/'
+        option passwd '/etc/passwd'
+        option opkg '/etc/opkg.conf'
+        option firewall '/etc/firewall.user'
+        option uploads '/lib/uci/upload/'
+
+config internal 'languages'
+
+config internal 'sauth'
+        option sessionpath '/tmp/luci-sessions'
+        option sessiontime '3600'
+
+config internal 'ccache'
+        option enable '1'
+
+config internal 'themes'
+        option Bootstrap '/luci-static/bootstrap'
+
+config internal 'apply'
+        option rollback '90'
+        option holdoff '4'
+        option timeout '5'
+        option display '1.5'
+
+config internal 'diag'
+        option dns 'openwrt.org'
+        option ping 'openwrt.org'
+        option route 'openwrt.org'
+保存后就完成了。这应该可以解决 UI 问题了。
+
+======================
+
+步骤 6（可选）：恢复默认 LuCI
+如果一切都搞砸了或者你遇到了错误，你可以删除旧的 LuCI 并重新安装原来的 LuCI：
+
+rm -rf /usr/lib/lua/luci
+rm -rf /www/luci-static
+rm -rf /usr/share/luci
+rm -f /etc/config/luci
+rm -f /www/cgi-bin/luci 
+然后下载并解压新的 Luci：
+
+cd /tmp
+wget https://github.com/linwj0710/777/raw/refs/heads/main/28/zltx28_luci_stock_full.tgz -O /tmp/zltx28_luci_stock_full.tgz
+cd /
+tar xzf /tmp/zltx28_luci_stock_full.tgz
+
+这将使一切恢复到默认状态并且不会出现错误。
+
+uci commit luci
+killall uhttpd
+uhttpd -p 0.0.0.0:4153 -h /www &
+
+=========================
+重启后持久性
+将以下行添加到您的启动脚本：
+
+# /etc/rc.local
+uhttpd -p 0.0.0.0:4153 -h /www &
+exit 0
+
+================
+⚠️严重警告
+一步走错，就可能彻底毁掉你的 ZLT-X28 路由器。使用错误的固件或架构会破坏 LuCI WebUI 和供应商的原始界面。一旦发生这种情况，你的设备就会彻底瘫痪，而且无法轻易恢复。
+
+原厂固件对大多数人来说都运行良好，但此 OpenWrt 版本赋予您完全访问权限，同时也承担全部风险。它基于一个旧的非官方 OpenWrt LuCI，存在已知错误。由于架构差异，官方 OpenWrt 软件包无法正常安装或运行。
+
+如果你搞砸了，路由器变砖了，那就得你自己承担责任，没有备份，没有帮助，也没有补救措施。唯一的解决办法是用一台能正常工作的 ZLT-X28 刷写整个固件。所以，基本上你只能靠自己了。
+
